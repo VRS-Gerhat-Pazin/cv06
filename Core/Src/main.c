@@ -25,6 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32f3xx_it.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,13 +45,14 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+volatile uint8_t command[6];
+volatile int n=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void process_serial_data(uint8_t ch);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -96,7 +98,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  USART2_RegisterCallback(process_serial_data);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -143,7 +145,26 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void process_serial_data(uint8_t ch)
+{
+	if ((ch=='\n') || (ch=='\r') || (ch=='\0'))
+		return;
+	if (ch=='l')
+	{
+		n=0;
+		memcpy(command, 0, 6);
+	}
+	command[n]=ch;
+	n++;
+	if (strncmp(command, "ledON", 5)==0)
+	{
+		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
+	}
+	if (strncmp(command, "ledOFF", 6)==0)
+	{
+		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
+	}
+}
 /* USER CODE END 4 */
 
 /**
