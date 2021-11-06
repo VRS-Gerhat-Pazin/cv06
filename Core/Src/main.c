@@ -35,6 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define MAX_COMMAND_LENGTH 6
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -45,7 +46,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-volatile uint8_t command[6];
+volatile uint8_t command[MAX_COMMAND_LENGTH];
 volatile int n=0;
 /* USER CODE END PV */
 
@@ -99,6 +100,7 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   USART2_RegisterCallback(process_serial_data);
+  LL_USART_EnableIT_RXNE(USART2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -106,7 +108,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  LL_mDelay(10);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -149,21 +151,28 @@ void process_serial_data(uint8_t ch)
 {
 	if ((ch=='\n') || (ch=='\r') || (ch=='\0'))
 		return;
+
 	if (ch=='l')
 	{
 		n=0;
-		memcpy(command, 0, 6);
+		memset(command, 0, 6);
 	}
 	command[n]=ch;
 	n++;
+
 	if (strncmp(command, "ledON", 5)==0)
 	{
 		LL_GPIO_SetOutputPin(LED_GPIO_Port, LED_Pin);
 	}
+
 	if (strncmp(command, "ledOFF", 6)==0)
 	{
 		LL_GPIO_ResetOutputPin(LED_GPIO_Port, LED_Pin);
 	}
+
+	// reset n back to 0 if command length is exceeded
+	n = n % MAX_COMMAND_LENGTH;
+
 }
 /* USER CODE END 4 */
 
