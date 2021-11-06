@@ -54,6 +54,7 @@ volatile int n=0;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void process_serial_data(uint8_t ch);
+void usart_send_data(uint8_t* data, uint8_t length);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -108,7 +109,16 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  LL_mDelay(10);
+	  if(LL_GPIO_IsOutputPinSet(LED_GPIO_Port, LED_Pin))
+	  {
+		  usart_send_data("LED ON\n", 7);
+	  }
+	  else
+	  {
+		  usart_send_data("LED OFF\n", 8);
+	  }
+
+	  LL_mDelay(5000);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -173,6 +183,15 @@ void process_serial_data(uint8_t ch)
 	// reset n back to 0 if command length is exceeded
 	n = n % MAX_COMMAND_LENGTH;
 
+}
+
+void usart_send_data(uint8_t* data, uint8_t length)
+{
+	for(uint8_t i = 0; i < length; ++i)
+	{
+		LL_USART_TransmitData8(USART2, data[i]);
+		LL_mDelay(1);
+	}
 }
 /* USER CODE END 4 */
 
