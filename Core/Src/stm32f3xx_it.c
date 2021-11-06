@@ -42,7 +42,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+static void (* usart2_callback)(uint8_t) = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -52,7 +52,10 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void USART2_RegisterCallback(void *callback)
+{
+	usart2_callback = callback;
+}
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -205,6 +208,13 @@ void SysTick_Handler(void)
 void USART2_IRQHandler(void)
 {
   /* USER CODE BEGIN USART2_IRQn 0 */
+	if(LL_USART_IsActiveFlag_RXNE(USART2))
+	{
+		if (usart2_callback != 0)
+			{
+				usart2_callback(LL_USART_ReceiveData8(USART2));
+			}
+	}
 
   /* USER CODE END USART2_IRQn 0 */
   /* USER CODE BEGIN USART2_IRQn 1 */
